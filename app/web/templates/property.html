@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+{% block title %}Properties — Big Easy Management Ops{% endblock %}
+
+{% block content %}
+
+{# ─── Page header ────────────────────────────────────────────────────────── #}
+<div class="px-8 pt-8 pb-6" style="border-bottom:1px solid #E5E1D8;">
+  <h1 class="text-2xl font-semibold tracking-tight" style="font-family:'Georgia',serif; color:#1C1917;">Properties</h1>
+  <p class="text-sm mt-1" style="color:#78716C;">Search by property name or street address</p>
+</div>
+
+<div class="px-8 py-7 max-w-4xl mx-auto space-y-6">
+
+  {# ── Search bar ── #}
+  <form method="get" action="/property" class="flex gap-2">
+    <div class="relative flex-1">
+      <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4" style="color:#A8A29E;"
+           fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803 7.5 7.5 0 0016.803 15.803z" />
+      </svg>
+      <input type="text" name="q" value="{{ q }}"
+             placeholder="e.g. carondelet, urquhart, 334…"
+             autofocus
+             class="w-full pl-10 pr-4 py-2.5 rounded-lg text-sm focus:outline-none focus:ring-2"
+             style="background:white; border:1px solid #E5E1D8; color:#1C1917; --tw-ring-color:#C49A2A;" />
+    </div>
+    <button type="submit"
+            class="px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors"
+            style="background:#C49A2A; color:white; border:none;">
+      Search
+    </button>
+    {% if q %}
+    <a href="/property"
+       class="px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+       style="background:white; color:#78716C; border:1px solid #E5E1D8;">
+      Clear
+    </a>
+    {% endif %}
+  </form>
+
+  {# ── Empty state ── #}
+  {% if not q %}
+  <div class="text-center py-16">
+    <svg class="w-10 h-10 mx-auto mb-3" style="color:#E5E1D8;"
+         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+    </svg>
+    <p class="text-sm" style="color:#A8A29E;">Search for a property to view its operational status</p>
+  </div>
+
+  {# ── Multiple results ── #}
+  {% elif properties | length > 1 %}
+  <div>
+    <p class="text-sm mb-3" style="color:#78716C;">
+      {{ properties | length }} properties match
+      <span class="font-semibold" style="color:#1C1917;">"{{ q }}"</span> — select one to view details.
+    </p>
+    <div class="rounded-lg bg-white overflow-hidden" style="border:1px solid #E5E1D8;">
+      {% for p in properties %}
+      <a href="/property?q={{ p.internal_name | urlencode }}"
+         class="flex items-center justify-between px-5 py-4 group transition-colors hover:bg-stone-50"
+         style="border-bottom:1px solid #F0EDE6;">
+        <div>
+          <div class="text-sm font-semibold group-hover:underline"
+               style="color:#1C1917; text-underline-offset:3px;">{{ p.internal_name }}</div>
+          <div class="text-xs mt-0.5" style="color:#78716C;">
+            {{ p.street }}{% if p.city %} · {{ p.city }}{% endif %}
+            {% if p.bedrooms %} · {{ p.bedrooms }}BR{% endif %}
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          {% if p.review_rating %}
+          <span class="text-xs" style="color:#78716C;">⭐ {{ p.review_rating }}</span>
+          {% endif %}
+          {% if p.str_license_expired %}
+          <span class="text-xs px-2 py-0.5 rounded" style="background:#F5F3FF; color:#7C3AED; border:1px solid #DDD6FE;">License expired</span>
+          {% endif %}
+          <svg class="w-4 h-4" style="color:#C8C4BC;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          </svg>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  {# ── No results ── #}
+  {% elif properties | length == 0 %}
+  <div class="text-center py-12">
+    <p class="text-sm" style="color:#78716C;">No properties found matching <span class="font-semibold" style="color:#1C1917;">"{{ q }}"</span></p>
+    <p class="text-xs mt-1" style="color:#A8A29E;">Try a partial name or street number</p>
+  </div>
+
+  {# ── Single result: full detail ── #}
+  {% elif selected %}
+  {% set p = selected %}
+
+  {# Property header card #}
+  <div class="rounded-lg bg-white overflow-hidden" style="border:1px solid #E5E1D8; border-top:3px solid #C49A2A;">
+    <div class="px-6 py-5" style="border-bottom:1px solid #F0EDE6;">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-semibold" style="font-family:'Georgia',serif; color:#1C1917;">{{ p.internal_name }}</h2>
+          <p class="text-sm mt-1" style="color:#78716C;">
+            {{ p.street }}{% if p.city %}, {{ p.city }}{% endif %}
+            {% if p.bedrooms %} · {{ p.bedrooms }}BR{% if p.bathrooms %}/{{ p.bathrooms }}BA{% endif %}{% endif %}
+            {% if p.max_guests %} · Up to {{ p.max_guests }} guests{% endif %}
+          </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+          {% if p.review_rating %}
+          <span class="text-sm" style="color:#44403C;">⭐ {{ p.review_rating }}</span>
+          {% endif %}
+          {% if p.str_license_expired %}
+          <span class="text-xs px-2 py-0.5 rounded font-medium"
+                style="background:#F5F3FF; color:#7C3AED; border:1px solid #DDD6FE;">License expired</span>
+          {% endif %}
+          {% if p.airbnb_active %}
+          <span class="text-xs px-2 py-0.5 rounded" style="background:#F0EDE6; color:#78716C; border:1px solid #E5E1D8;">Airbnb</span>
+          {% endif %}
+          {% if p.vrbo_active %}
+          <span class="text-xs px-2 py-0.5 rounded" style="background:#F0EDE6; color:#78716C; border:1px solid #E5E1D8;">VRBO</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {# Info grid #}
+    <div class="grid grid-cols-4" style="border-bottom:1px solid #F0EDE6;">
+      <div class="px-5 py-4" style="border-right:1px solid #F0EDE6;">
+        <div class="text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:#A8A29E; letter-spacing:0.07em;">Check-in</div>
+        <div class="text-sm" style="color:#1C1917;">
+          {% if p.checkin_time_start %}{{ p.checkin_time_start }}{% else %}<span style="color:#C8C4BC;">Not set</span>{% endif %}
+          {% if p.checkin_time_end %} – {{ p.checkin_time_end }}{% endif %}
+        </div>
+      </div>
+      <div class="px-5 py-4" style="border-right:1px solid #F0EDE6;">
+        <div class="text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:#A8A29E; letter-spacing:0.07em;">Check-out</div>
+        <div class="text-sm" style="color:#1C1917;">
+          {% if p.checkout_time %}{{ p.checkout_time }}{% else %}<span style="color:#C8C4BC;">Not set</span>{% endif %}
+        </div>
+      </div>
+      <div class="px-5 py-4" style="border-right:1px solid #F0EDE6;">
+        <div class="text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:#A8A29E; letter-spacing:0.07em;">WiFi</div>
+        {% if p.wifi_network %}
+          <div class="text-sm font-mono" style="color:#1C1917;">{{ p.wifi_network }}</div>
+          <div class="text-xs font-mono mt-0.5" style="color:#78716C;">{{ p.wifi_password or '—' }}</div>
+        {% elif p.dq_has_structured_wifi == false %}
+          <div class="text-xs" style="color:#D97706;">Check access instructions</div>
+        {% else %}
+          <div class="text-sm" style="color:#C8C4BC;">Not on record</div>
+        {% endif %}
+      </div>
+      <div class="px-5 py-4">
+        <div class="text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:#A8A29E; letter-spacing:0.07em;">Door Code</div>
+        {% if p.door_code %}
+          <div class="text-sm font-mono" style="color:#1C1917;">{{ p.door_code }}</div>
+        {% elif p.dq_has_structured_door_code == false %}
+          <div class="text-xs" style="color:#D97706;">Embedded in access instructions</div>
+        {% else %}
+          <div class="text-sm" style="color:#C8C4BC;">Not on record</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {# STR license row #}
+    {% if p.str_license_number or p.str_license_expires %}
+    <div class="px-5 py-3 flex items-center gap-4 text-xs" style="background:#FAF9F6;">
+      <span style="color:#A8A29E;">STR License:</span>
+      <span style="color:#44403C; font-weight:500;">{{ p.str_license_number or '—' }}</span>
+      {% if p.str_license_type %}<span style="color:#A8A29E;">{{ p.str_license_type }}</span>{% endif %}
+      {% if p.str_license_expires %}
+        <span style="color:{% if p.str_license_expired %}#DC2626{% else %}#44403C{% endif %}; font-weight:{% if p.str_license_expired %}600{% else %}400{% endif %};">
+          Expires {{ p.str_license_expires }}{% if p.str_license_expired %} — EXPIRED{% endif %}
+        </span>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── Active risks ── #}
+  <div>
+    <div class="flex items-baseline justify-between mb-3">
+      <h3 class="text-xs font-semibold uppercase tracking-widest" style="color:#A8A29E; letter-spacing:0.09em;">Active Risks</h3>
+      <span class="text-xs" style="color:#A8A29E;">{{ risks | length }} active</span>
+    </div>
+    {% if not risks %}
+    <div class="rounded-lg bg-white px-5 py-6 text-center" style="border:1px solid #E5E1D8;">
+      <p class="text-sm" style="color:#A8A29E;">No active risks for this property.</p>
+    </div>
+    {% else %}
+    <div class="space-y-2">
+      {% for r in risks %}
+      {% set sev = r.severity %}
+      <div class="rounded-lg bg-white px-5 py-3.5 flex items-start gap-3"
+           style="border:1px solid #E5E1D8; border-left:3px solid {% if sev == 'critical' %}#DC2626{% elif sev == 'high' %}#D97706{% elif sev == 'medium' %}#2563EB{% else %}#C49A2A{% endif %};">
+        <span class="shrink-0 mt-0.5 text-xs px-2 py-0.5 rounded font-semibold"
+              style="{% if sev == 'critical' %}background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;
+                     {% elif sev == 'high' %}background:#FFFBEB; color:#D97706; border:1px solid #FDE68A;
+                     {% elif sev == 'medium' %}background:#EFF6FF; color:#2563EB; border:1px solid #BFDBFE;
+                     {% else %}background:#FDF8EC; color:#9E7B1C; border:1px solid #E8D99A;{% endif %}">
+          {{ sev | capitalize }}
+        </span>
+        <div class="min-w-0 flex-1">
+          <div class="text-sm font-medium" style="color:#1C1917;">{{ r.title }}</div>
+          {% if r.detail %}<div class="text-xs mt-0.5" style="color:#78716C;">{{ r.detail }}</div>{% endif %}
+          {% if r.recommendation %}
+          <div class="text-xs mt-1" style="color:#9E7B1C;"><span style="font-weight:600;">→</span> {{ r.recommendation }}</div>
+          {% endif %}
+        </div>
+        <div class="shrink-0 text-xs" style="color:#C8C4BC;">{{ r.risk_type | replace('_', ' ') | title }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── Upcoming arrivals ── #}
+  <div>
+    <div class="flex items-baseline justify-between mb-3">
+      <h3 class="text-xs font-semibold uppercase tracking-widest" style="color:#A8A29E; letter-spacing:0.09em;">Upcoming Arrivals</h3>
+      <span class="text-xs" style="color:#A8A29E;">{{ arrivals | length }} confirmed</span>
+    </div>
+    {% if not arrivals %}
+    <div class="rounded-lg bg-white px-5 py-6 text-center" style="border:1px solid #E5E1D8;">
+      <p class="text-sm" style="color:#A8A29E;">No upcoming confirmed reservations.</p>
+    </div>
+    {% else %}
+    <div class="rounded-lg bg-white overflow-hidden" style="border:1px solid #E5E1D8;">
+      <table class="w-full text-sm">
+        <thead>
+          <tr style="background:#FAF9F6; border-bottom:1px solid #E5E1D8;">
+            <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wide" style="color:#78716C; letter-spacing:0.07em;">Guest</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:#78716C; letter-spacing:0.07em;">Check-in</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:#78716C; letter-spacing:0.07em;">Check-out</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide hidden md:table-cell" style="color:#78716C; letter-spacing:0.07em;">Guests</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide hidden md:table-cell" style="color:#78716C; letter-spacing:0.07em;">Channel</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style="color:#78716C; letter-spacing:0.07em;">Access Code</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in arrivals %}
+          <tr style="border-bottom:1px solid #F0EDE6;" class="hover:bg-stone-50 transition-colors">
+            <td class="px-5 py-3.5 font-medium" style="color:#1C1917;">{{ r.guest_name or '—' }}</td>
+            <td class="px-4 py-3.5" style="color:#44403C;">{{ r.checkin_date }}</td>
+            <td class="px-4 py-3.5" style="color:#78716C;">{{ r.checkout_date }}</td>
+            <td class="px-4 py-3.5 hidden md:table-cell" style="color:#78716C;">{{ r.guest_count or '—' }}</td>
+            <td class="px-4 py-3.5 hidden md:table-cell text-xs capitalize" style="color:#78716C;">{{ r.channel or '—' }}</td>
+            <td class="px-4 py-3.5 text-xs font-semibold"
+                style="color:{% if r.guest_access_code %}#16A34A{% else %}#DC2626{% endif %};">
+              {% if r.guest_access_code %}{{ r.guest_access_code }}{% else %}Not set{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── Readiness checklist ── #}
+  <div class="rounded-lg bg-white px-6 py-5" style="border:1px solid #E5E1D8;">
+    <h3 class="text-xs font-semibold uppercase tracking-widest mb-4" style="color:#A8A29E; letter-spacing:0.09em;">Readiness Checklist</h3>
+    <div class="grid grid-cols-2 gap-x-8 gap-y-2.5 text-sm">
+      {% macro check_row(label, ok, note="") %}
+      <div class="flex items-center gap-2.5">
+        <span class="w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+              style="{% if ok %}background:#DCFCE7; color:#16A34A;{% else %}background:#FEF2F2; color:#DC2626;{% endif %}">
+          {% if ok %}✓{% else %}✗{% endif %}
+        </span>
+        <span style="color:#44403C;">{{ label }}</span>
+        {% if not ok and note %}
+        <span class="text-xs" style="color:#D97706;">{{ note }}</span>
+        {% endif %}
+      </div>
+      {% endmacro %}
+      {{ check_row("Structured WiFi on record", p.dq_has_structured_wifi, "— check access instructions") }}
+      {{ check_row("Structured door code on record", p.dq_has_structured_door_code, "— check access instructions") }}
+      {{ check_row("STR license current", not p.str_license_expired, "— renewal required") }}
+      {{ check_row("Parking info on record", p.dq_has_parking_details, "— guests may ask") }}
+      {{ check_row("Check-in notes on record", p.dq_has_additional_checkin) }}
+      {{ check_row("Unit notes on record", p.dq_has_unit_notes) }}
+    </div>
+    {% if p.dq_completeness_score is not none %}
+    <div class="mt-5 pt-4 flex items-center gap-3" style="border-top:1px solid #F0EDE6;">
+      <span class="text-xs" style="color:#A8A29E;">Data completeness</span>
+      <div class="flex-1 h-1.5 rounded-full" style="background:#F0EDE6;">
+        <div class="h-1.5 rounded-full"
+             style="width:{{ p.dq_completeness_score }}%; background:{% if p.dq_completeness_score >= 70 %}#16A34A{% elif p.dq_completeness_score >= 40 %}#D97706{% else %}#DC2626{% endif %};"></div>
+      </div>
+      <span class="text-xs font-semibold" style="color:#44403C;">{{ p.dq_completeness_score }}%</span>
+    </div>
+    {% endif %}
+  </div>
+
+  {% endif %}
+</div>
+{% endblock %}

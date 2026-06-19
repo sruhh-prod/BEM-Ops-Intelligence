@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Pascal — Big Easy Management Ops{% endblock %}
+
+{% block content %}
+
+{# ─── Page header ────────────────────────────────────────────────────────── #}
+<div class="px-8 pt-8 pb-6" style="border-bottom:1px solid #E5E1D8;">
+  <div class="flex items-start justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight" style="font-family:'Georgia',serif; color:#1C1917;">Pascal</h1>
+      <p class="text-sm mt-1" style="color:#78716C;">AI-powered operations briefing — answers the questions you ask every day</p>
+    </div>
+    <span class="text-xs px-3 py-1.5 rounded-full font-semibold tracking-wide uppercase"
+          style="background:#FDF8EC; color:#9E7B1C; border:1px solid #E8D99A; letter-spacing:0.07em;">
+      V1 · CLI Preview
+    </span>
+  </div>
+</div>
+
+<div class="px-8 py-7 max-w-3xl mx-auto space-y-8">
+
+  {# ── Intro card ── #}
+  <div class="rounded-lg bg-white px-6 py-5" style="border:1px solid #E5E1D8; border-left:3px solid #C49A2A;">
+    <p class="text-sm leading-relaxed" style="color:#44403C;">
+      Pascal V1 answers your five most important daily ops questions — at-risk arrivals, access codes, STR compliance,
+      data quality gaps, and your Thursday briefing. Run Pascal from the terminal while the full conversational interface
+      is in development.
+    </p>
+    <div class="mt-4 rounded" style="background:#1C1917; padding:1rem;">
+      <code class="text-sm" style="color:#C49A2A; font-family:ui-monospace,monospace;">cd app &amp;&amp; python3 main.py pascal</code>
+    </div>
+  </div>
+
+  {# ── Commands ── #}
+  <div>
+    <h2 class="text-xs font-semibold uppercase tracking-widest mb-4" style="color:#A8A29E; letter-spacing:0.09em;">V1 Commands</h2>
+    <div class="space-y-3">
+
+      <div class="rounded-lg bg-white overflow-hidden" style="border:1px solid #E5E1D8;">
+        <div class="px-5 py-4" style="border-bottom:1px solid #F0EDE6;">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded flex items-center justify-center shrink-0 mt-0.5"
+                   style="background:#FEF2F2; border:1px solid #FECACA;">
+                <svg class="w-4 h-4" style="color:#DC2626;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              </div>
+              <div>
+                <div class="text-sm font-semibold" style="color:#1C1917;">At-Risk Arrivals</div>
+                <div class="text-xs mt-0.5" style="color:#78716C;">Which guests checking in soon have unresolved issues?</div>
+              </div>
+            </div>
+            <span class="text-xs px-2 py-0.5 rounded font-semibold shrink-0"
+                  style="background:#FDF8EC; color:#9E7B1C; border:1px solid #E8D99A;">MVP</span>
+          </div>
+        </div>
+        <div class="px-5 py-3" style="background:#FAF9F6;">
+          <code class="text-xs" style="color:#44403C; font-family:ui-monospace,monospace;">python3 main.py pascal arrivals</code>
+        </div>
+      </div>
+
+      <div class="rounded-lg bg-white overflow-hidden" style="border:1px solid #E5E1D8;">
+        <div class="px-5 py-4" style="border-bottom:1px solid #F0EDE6;">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded flex items-center justify-center shrink-0 mt-0.5"
+                   style="background:#FFFBEB; border:1px solid #FDE68A;">
+                <svg class="w-4 h-4" style="color:#D97706;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+                </svg>
+              </div>
+              <div>
+                <div class="text-sm font-semibold" style="color:#1C1917;">Access Code Check</div>
+                <div class="text-xs mt-0.5" style="color:#78716C;">Do all arriving guests have a door code set?</div>
+              </div>
+            </div>
+            <span class="text-xs px-2 py-0.5 rounded font-semibold shrink-0"
+                  style="background:#FDF8EC; color:#9E7B1C; border:1px solid #E8D99A;">MVP</span>
+          </div>
+        </div>
+        <div class="px-5 py-3" style="background:#FAF9F6;">
+          <code class="text-xs" style="color:#44403C; font-family:ui-monospace,monospace;">python3 main.py pascal access</code>
+        </div>
+      </div>
+
+      <div class="rounded-lg bg-white overflow-hidden" style="border:1px solid #E5E1D8;">
+        <div class="px-5 py-4" style="border-bottom:1px solid #F0EDE6;">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded flex items-center justify-center shrink-0 mt-0.5"
+                   style="background:#F5F3FF; border:1px solid #DDD6FE;">
+                <svg class="w-4 h-4" style="color:#7C3AED;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                </svg>
+              </div>
+              <div>
+                <div class="text-sm font-semibold" style="color:#1C1917;">STR Compliance</div>
+                <div class="text-xs mt-0.5" style="color:#78716C;">Which properties have expired or expiring STR licenses?</div>
+              </div>
+            </div>
+            <span class="text-xs px-2 py-0.5 rounded font-semibold shrink-0"
+                  style="background:#FDF8EC; color:#9E7B1C; border:1px solid #E8D99A;">MVP</span>
+          </div>
+        </div>
+        <div class="px-5 py-3" style="background:#FAF9F6;">
+          <code class="text-xs" style="color:#44403C; font-family:ui-monospace,monospace;">python3 main.py pascal compliance</code>
+        </div>
+      </div>
+
+      <div class="rounded-lg bg-white overflow-hidden" style="border:1px solid #E5E1D8;">
+        <div class="px-5 py-4" style="border-bottom:1px solid #F0EDE6;">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded flex items-center justify-center shrink-0 mt-0.5"
+                   style="background:#EFF6FF; border:1px solid #BFDBFE;">
+                <svg class="w-4 h-4" style="color:#2563EB;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776" />
+                </svg>
+              </div>
+              <div>
+                <div class="text-sm font-semibold" style="color:#1C1917;">Data Quality</div>
+                <div class="text-xs mt-0.5" style="color:#78716C;">Which properties are missing WiFi, door codes, or access instructions?</div>
+              </div>
+            </div>
+            <span class="text-xs px-2 py-0.5 rounded font-semibold shrink-0"
+                  style="background:#FDF8EC; color:#9E7B1C; border:1px solid #E8D99A;">MVP</span>
+          </div>
+        </div>
+        <div class="px-5 py-3" style="background:#FAF9F6;">
+          <code class="text-xs" style="color:#44403C; font-family:ui-monospace,monospace;">python3 main.py pascal gaps</code>
+        </div>
+      </div>
+
+      <div class="rounded-lg bg-white overflow-hidden" style="border:1px solid #E5E1D8;">
+        <div class="px-5 py-4" style="border-bottom:1px solid #F0EDE6;">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded flex items-center justify-center shrink-0 mt-0.5"
+                   style="background:#F0FDF4; border:1px solid #BBF7D0;">
+                <svg class="w-4 h-4" style="color:#16A34A;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 9v7.5" />
+                </svg>
+              </div>
+              <div>
+                <div class="text-sm font-semibold" style="color:#1C1917;">Thursday Briefing</div>
+                <div class="text-xs mt-0.5" style="color:#78716C;">What do I need to cover in this week's ops call?</div>
+              </div>
+            </div>
+            <span class="text-xs px-2 py-0.5 rounded font-semibold shrink-0"
+                  style="background:#FDF8EC; color:#9E7B1C; border:1px solid #E8D99A;">MVP</span>
+          </div>
+        </div>
+        <div class="px-5 py-3" style="background:#FAF9F6;">
+          <code class="text-xs" style="color:#44403C; font-family:ui-monospace,monospace;">python3 main.py pascal thursday</code>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  {# ── Phase 2 roadmap ── #}
+  <div>
+    <h2 class="text-xs font-semibold uppercase tracking-widest mb-4" style="color:#A8A29E; letter-spacing:0.09em;">Phase 2 Roadmap</h2>
+    <div class="rounded-lg bg-white px-6 py-5" style="border:1px solid #E5E1D8;">
+      <div class="grid grid-cols-2 gap-x-8 gap-y-2.5 text-sm" style="color:#78716C;">
+        <div class="flex items-center gap-2.5">
+          <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:#E5E1D8;"></span>
+          Conversational chat interface
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:#E5E1D8;"></span>
+          Guest special requests summary
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:#E5E1D8;"></span>
+          Property-specific check-in briefs
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:#E5E1D8;"></span>
+          Low-rated property action plans
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:#E5E1D8;"></span>
+          Breezeway task briefings
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span class="w-1.5 h-1.5 rounded-full shrink-0" style="background:#E5E1D8;"></span>
+          Slack / email delivery
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

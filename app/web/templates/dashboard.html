@@ -1,0 +1,723 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Big Easy Management Ops{% endblock %}
+
+{% block content %}
+
+{# ─── Page header ────────────────────────────────────────────────────────── #}
+<div class="px-8 pt-8 pb-6" style="border-bottom:1px solid #E5E1D8;">
+  <div class="flex items-end justify-between">
+    <div>
+      <div class="flex items-center gap-3 mb-1">
+        <h1 class="text-2xl font-semibold tracking-tight" style="font-family:'Georgia',serif; color:#1C1917;">
+          Operations Overview
+        </h1>
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+              style="background:#FDF8EC; color:#9E7B1C; border:1px solid #E8D99A;">
+          <span class="w-1.5 h-1.5 rounded-full" style="background:#C49A2A;"></span>
+          Live Operations
+        </span>
+      </div>
+      <p class="text-sm" style="color:#78716C;">Good morning — here's what needs attention today.</p>
+    </div>
+    <div class="text-right">
+      <div class="text-xs" style="color:#A8A29E;">{{ generated_at }}</div>
+      <div class="flex items-center gap-1.5 justify-end mt-1">
+        {% if kpis.health_status == 'good' %}
+          <span class="w-2 h-2 rounded-full" style="background:#16A34A;"></span>
+          <span class="text-xs font-medium" style="color:#16A34A;">Portfolio {{ kpis.health_pct }}% healthy</span>
+        {% elif kpis.health_status == 'warn' %}
+          <span class="w-2 h-2 rounded-full" style="background:#D97706;"></span>
+          <span class="text-xs font-medium" style="color:#D97706;">Portfolio {{ kpis.health_pct }}% healthy</span>
+        {% else %}
+          <span class="w-2 h-2 rounded-full" style="background:#DC2626;"></span>
+          <span class="text-xs font-medium" style="color:#DC2626;">Portfolio {{ kpis.health_pct }}% healthy</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="px-8 py-7 space-y-8 max-w-screen-xl mx-auto">
+
+{# ─── 1. KPI Cards ───────────────────────────────────────────────────────── #}
+<div class="grid grid-cols-5 gap-4">
+
+  {# Outstanding Tasks #}
+  <div class="rounded-lg bg-white px-5 py-4" style="border:1px solid #E5E1D8; border-top:3px solid #C49A2A;">
+    <div class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#A8A29E; letter-spacing:0.09em;">Outstanding</div>
+    <div class="text-3xl font-bold" style="color:#1C1917;">{{ kpis.outstanding }}</div>
+    <div class="text-xs mt-1" style="color:#A8A29E;">open tasks</div>
+  </div>
+
+  {# New Tasks #}
+  <div class="rounded-lg bg-white px-5 py-4" style="border:1px solid #E5E1D8; border-top:3px solid #C49A2A;">
+    <div class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#A8A29E; letter-spacing:0.09em;">New Tasks</div>
+    <div class="text-3xl font-bold" style="color:{% if kpis.new_tasks > 0 %}#C49A2A{% else %}#1C1917{% endif %};">
+      {{ kpis.new_tasks }}
+    </div>
+    <div class="text-xs mt-1" style="color:#A8A29E;">last 24 hours</div>
+  </div>
+
+  {# Stale Tasks #}
+  <div class="rounded-lg bg-white px-5 py-4"
+       style="border:1px solid #E5E1D8; border-top:3px solid {% if kpis.stale > 0 %}#D97706{% else %}#C49A2A{% endif %};">
+    <div class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#A8A29E; letter-spacing:0.09em;">Stale Tasks</div>
+    <div class="text-3xl font-bold" style="color:{% if kpis.stale > 0 %}#D97706{% else %}#1C1917{% endif %};">
+      {{ kpis.stale }}
+    </div>
+    <div class="text-xs mt-1" style="color:#A8A29E;">no activity 48h+</div>
+  </div>
+
+  {# At-Risk Arrivals #}
+  <div class="rounded-lg bg-white px-5 py-4"
+       style="border:1px solid #E5E1D8; border-top:3px solid {% if kpis.at_risk > 0 %}#DC2626{% else %}#C49A2A{% endif %};">
+    <div class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#A8A29E; letter-spacing:0.09em;">At-Risk Arrivals</div>
+    <div class="text-3xl font-bold" style="color:{% if kpis.at_risk > 0 %}#DC2626{% else %}#1C1917{% endif %};">
+      {{ kpis.at_risk }}
+    </div>
+    <div class="text-xs mt-1" style="color:#A8A29E;">next 72 hours</div>
+  </div>
+
+  {# Portfolio Health #}
+  <div class="rounded-lg bg-white px-5 py-4"
+       style="border:1px solid #E5E1D8; border-top:3px solid {% if kpis.health_status == 'good' %}#16A34A{% elif kpis.health_status == 'warn' %}#D97706{% else %}#DC2626{% endif %};">
+    <div class="text-xs font-semibold uppercase tracking-widest mb-3" style="color:#A8A29E; letter-spacing:0.09em;">Portfolio Health</div>
+    <div class="text-3xl font-bold"
+         style="color:{% if kpis.health_status == 'good' %}#16A34A{% elif kpis.health_status == 'warn' %}#D97706{% else %}#DC2626{% endif %};">
+      {{ kpis.health_pct }}%
+    </div>
+    <div class="text-xs mt-1" style="color:#A8A29E;">of {{ portfolio_stats.total }} properties</div>
+  </div>
+
+</div>
+
+{# ─── Leadership Brief ────────────────────────────────────────────────────── #}
+{% if bw_loaded and leadership_brief %}
+<section style="margin-bottom:2rem;">
+  <div class="flex items-end justify-between mb-4">
+    <div>
+      <h2 class="text-xs font-semibold uppercase tracking-widest" style="color:#A8A29E; letter-spacing:0.09em;">Leadership Brief</h2>
+      <p class="text-sm mt-1" style="color:#78716C;">Key operational intelligence from live Breezeway data.</p>
+    </div>
+    <span class="text-xs px-2 py-1 rounded-full" style="background:#F0EDE6; color:#A8A29E;">{{ leadership_brief | length }} insight{% if leadership_brief | length != 1 %}s{% endif %}</span>
+  </div>
+  <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(340px, 1fr)); gap:1rem;">
+    {% for card in leadership_brief %}
+    <div style="background:#FFFFFF; border-radius:8px; border:1px solid #E5E1D8; border-left:4px solid
+      {% if card.level == 'critical' %}#DC2626
+      {% elif card.level == 'risk' %}#D97706
+      {% elif card.level == 'opportunity' %}#C49A2A
+      {% else %}#16A34A{% endif %};
+      padding:1.25rem 1.25rem 1rem 1.25rem;">
+      <div class="flex items-start gap-3">
+        <div style="flex-shrink:0; width:8px; height:8px; border-radius:50%; margin-top:6px; background:
+          {% if card.level == 'critical' %}#DC2626
+          {% elif card.level == 'risk' %}#D97706
+          {% elif card.level == 'opportunity' %}#C49A2A
+          {% else %}#16A34A{% endif %};"></div>
+        <div style="flex:1; min-width:0;">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-xs font-semibold uppercase tracking-wide" style="color:
+              {% if card.level == 'critical' %}#DC2626
+              {% elif card.level == 'risk' %}#D97706
+              {% elif card.level == 'opportunity' %}#C49A2A
+              {% else %}#16A34A{% endif %};">
+              {% if card.level == 'critical' %}Critical
+              {% elif card.level == 'risk' %}Emerging Risk
+              {% elif card.level == 'opportunity' %}Opportunity
+              {% else %}Positive{% endif %}
+            </span>
+          </div>
+          <h3 class="font-semibold text-sm mb-1" style="color:#1C1917;">{{ card.headline }}</h3>
+          <p class="text-sm mb-2" style="color:#78716C; line-height:1.5;">{{ card.explanation }}</p>
+          <div class="text-xs font-medium mb-2 px-2 py-1 rounded" style="background:#F0EDE6; color:#57534E; display:inline-block;">
+            {{ card.metric }}
+          </div>
+          {% if card.action %}
+          <p class="text-xs mt-2" style="color:#A8A29E; border-top:1px solid #F0EDE6; padding-top:0.5rem;">
+            <span style="font-weight:600; color:#78716C;">Action:</span> {{ card.action }}
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{# ─── 2. Attention Needed Today ──────────────────────────────────────────── #}
+<section>
+  <div class="flex items-end justify-between mb-4">
+    <div>
+      <h2 class="text-xs font-semibold uppercase tracking-widest" style="color:#A8A29E; letter-spacing:0.09em;">Attention Needed Today</h2>
+      <p class="text-base font-semibold mt-0.5" style="color:#1C1917;">Critical and high-severity issues affecting confirmed arrivals</p>
+    </div>
+    <span class="text-xs font-medium px-2.5 py-1 rounded"
+          style="{% if attention_items %}background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;{% else %}background:#F0EDE6; color:#A8A29E; border:1px solid #E5E1D8;{% endif %}">
+      {{ attention_items | length }} item{% if attention_items | length != 1 %}s{% endif %}
+    </span>
+  </div>
+
+  {% if not attention_items %}
+  <div class="rounded-lg bg-white py-10 text-center" style="border:1px solid #E5E1D8;">
+    <div class="text-2xl mb-2">✓</div>
+    <p class="text-sm font-medium" style="color:#44403C;">No critical issues right now</p>
+    <p class="text-xs mt-1" style="color:#A8A29E;">All upcoming arrivals are clear</p>
+  </div>
+  {% else %}
+  <div class="rounded-lg bg-white overflow-hidden" style="border:1px solid #E5E1D8;">
+    <table class="w-full text-sm">
+      <thead>
+        <tr style="background:#FAF9F6; border-bottom:1px solid #E5E1D8;">
+          <th class="w-1 px-0 py-0"></th>
+          <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Property</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Issue</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Status</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Arrival</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Recommended Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in attention_items %}
+        {% set sev = item.severity %}
+        <tr style="border-bottom:1px solid #F0EDE6;" class="hover:bg-stone-50 transition-colors">
+          <td class="p-0 w-1">
+            <div class="w-1 min-h-[54px]"
+                 style="background:{% if sev == 'critical' %}#DC2626{% elif sev == 'high' %}#D97706{% else %}#C49A2A{% endif %};"></div>
+          </td>
+          <td class="px-5 py-3.5">
+            <a href="/property?q={{ item.property | urlencode }}"
+               class="font-semibold hover:underline" style="color:#1C1917; text-underline-offset:3px;">
+              {{ item.property }}
+            </a>
+          </td>
+          <td class="px-4 py-3.5" style="color:#44403C;">{{ item.issue }}</td>
+          <td class="px-4 py-3.5">
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-semibold"
+                  style="{% if sev == 'critical' %}background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;{% elif sev == 'high' %}background:#FFFBEB; color:#D97706; border:1px solid #FDE68A;{% else %}background:#FDF8EC; color:#9E7B1C; border:1px solid #E8D99A;{% endif %}">
+              <span class="w-1.5 h-1.5 rounded-full"
+                    style="background:{% if sev == 'critical' %}#DC2626{% elif sev == 'high' %}#D97706{% else %}#C49A2A{% endif %};"></span>
+              {{ sev | upper }}
+            </span>
+          </td>
+          <td class="px-4 py-3.5 text-xs whitespace-nowrap">
+            {% if item.arrival %}
+              <div class="font-medium"
+                   style="color:{% if item.hours_until is not none and item.hours_until < 12 %}#DC2626{% elif item.hours_until is not none and item.hours_until < 24 %}#D97706{% else %}#44403C{% endif %};">
+                {{ item.arrival }}
+              </div>
+              {% if item.hours_until is not none %}
+              <div class="mt-0.5" style="color:#A8A29E;">
+                {% if item.hours_until < 1 %}Arriving now
+                {% elif item.hours_until < 24 %}{{ item.hours_until | int }}h away
+                {% else %}{{ (item.hours_until / 24) | round(0, 'floor') | int }}d away{% endif %}
+              </div>
+              {% endif %}
+            {% else %}
+              <span style="color:#C8C4BC;">—</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3.5 text-xs max-w-xs" style="color:#78716C;">
+            <span style="color:#9E7B1C; font-weight:600;">→</span> {{ item.action or '—' }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</section>
+
+{# ─── 3. Three-column section ────────────────────────────────────────────── #}
+<div class="grid grid-cols-3 gap-6">
+
+  {# ── Today's Arrivals ── #}
+  <div>
+    <div class="flex items-baseline justify-between mb-3">
+      <h2 class="text-xs font-semibold uppercase tracking-widest" style="color:#A8A29E; letter-spacing:0.09em;">Today's Arrivals</h2>
+      <span class="text-xs" style="color:#C8C4BC;">{{ today_arrivals | length }}</span>
+    </div>
+    {% if not today_arrivals %}
+    <div class="rounded-lg bg-white py-8 text-center" style="border:1px solid #E5E1D8;">
+      <p class="text-sm" style="color:#A8A29E;">No arrivals today</p>
+    </div>
+    {% else %}
+    <div class="space-y-2">
+      {% for r in today_arrivals %}
+      <div class="rounded-lg bg-white px-4 py-3 flex items-start justify-between gap-3"
+           style="border:1px solid #E5E1D8; border-left:3px solid {% if not r.guest_access_code %}#DC2626{% else %}#16A34A{% endif %};">
+        <div class="min-w-0">
+          <a href="/property?q={{ r.property_name | urlencode }}"
+             class="text-sm font-semibold block truncate hover:underline"
+             style="color:#1C1917; text-underline-offset:3px;">{{ r.property_name }}</a>
+          <div class="text-xs mt-0.5 truncate" style="color:#78716C;">
+            {{ r.guest_name or '—' }}{% if r.guest_count %} · {{ r.guest_count }} guests{% endif %}
+          </div>
+          {% if r.channel %}
+          <div class="text-xs mt-1" style="color:#C8C4BC; text-transform:capitalize;">{{ r.channel }}</div>
+          {% endif %}
+        </div>
+        <div class="shrink-0 text-xs font-semibold mt-0.5"
+             style="color:{% if r.guest_access_code %}#16A34A{% else %}#DC2626{% endif %};">
+          {% if r.guest_access_code %}Code set{% else %}No code{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── Quick Wins ── #}
+  <div>
+    <div class="flex items-baseline justify-between mb-3">
+      <h2 class="text-xs font-semibold uppercase tracking-widest" style="color:#A8A29E; letter-spacing:0.09em;">Quick Wins</h2>
+      <span class="text-xs" style="color:#C8C4BC;">{{ quick_wins | length }} tasks</span>
+    </div>
+    {% if not quick_wins %}
+    <div class="rounded-lg bg-white py-8 text-center" style="border:1px solid #E5E1D8;">
+      <p class="text-sm" style="color:#A8A29E;">No quick wins this week</p>
+    </div>
+    {% else %}
+    <div class="space-y-2">
+      {% for t in quick_wins %}
+      <div class="rounded-lg bg-white px-4 py-3" style="border:1px solid #E5E1D8;">
+        <div class="flex items-start justify-between gap-2">
+          <div class="min-w-0">
+            <div class="text-sm font-medium truncate" style="color:#1C1917;">{{ t.task_name or '—' }}</div>
+            <div class="text-xs mt-0.5 truncate" style="color:#78716C;">{{ t.property_name or t.street or '?' }}</div>
+          </div>
+          {% if t.estimated_hours %}
+          <span class="shrink-0 text-xs px-1.5 py-0.5 rounded" style="background:#F0EDE6; color:#78716C;">
+            {{ "%.0f"|format(t.estimated_hours) }}h
+          </span>
+          {% endif %}
+        </div>
+        <div class="flex items-center gap-2 mt-2 text-xs">
+          <span style="color:#A8A29E; text-transform:capitalize;">{{ t.department or '' }}</span>
+          {% if t.assignees and t.assignees | length > 0 %}
+          <span style="color:#C8C4BC;">·</span>
+          <span style="color:#A8A29E;">{{ t.assignees | join(', ') }}</span>
+          {% else %}
+          <span style="color:#C8C4BC;">·</span>
+          <span style="color:#D97706;">Unassigned</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── Portfolio Health ── #}
+  <div>
+    <div class="flex items-baseline justify-between mb-3">
+      <h2 class="text-xs font-semibold uppercase tracking-widest" style="color:#A8A29E; letter-spacing:0.09em;">Portfolio Health</h2>
+      <span class="text-xs" style="color:#C8C4BC;">{{ portfolio_stats.total }} properties</span>
+    </div>
+    <div class="rounded-lg bg-white px-5 py-4 space-y-4" style="border:1px solid #E5E1D8;">
+
+      {# Health bar #}
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs" style="color:#78716C;">Overall health score</span>
+          <span class="text-sm font-bold"
+                style="color:{% if kpis.health_status == 'good' %}#16A34A{% elif kpis.health_status == 'warn' %}#D97706{% else %}#DC2626{% endif %};">
+            {{ kpis.health_pct }}%
+          </span>
+        </div>
+        <div class="h-1.5 rounded-full" style="background:#F0EDE6;">
+          <div class="h-1.5 rounded-full"
+               style="width:{{ kpis.health_pct }}%; background:{% if kpis.health_status == 'good' %}#16A34A{% elif kpis.health_status == 'warn' %}#D97706{% else %}#DC2626{% endif %};"></div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid #F0EDE6; padding-top:1rem;" class="space-y-2.5">
+        {% if portfolio_stats.critical > 0 %}
+        <div class="flex items-center justify-between text-xs">
+          <span class="flex items-center gap-1.5" style="color:#44403C;">
+            <span class="w-2 h-2 rounded-full" style="background:#DC2626;"></span>Critical risks
+          </span>
+          <span class="font-semibold" style="color:#DC2626;">{{ portfolio_stats.critical }}</span>
+        </div>
+        {% endif %}
+        {% if portfolio_stats.high > 0 %}
+        <div class="flex items-center justify-between text-xs">
+          <span class="flex items-center gap-1.5" style="color:#44403C;">
+            <span class="w-2 h-2 rounded-full" style="background:#D97706;"></span>High risks
+          </span>
+          <span class="font-semibold" style="color:#D97706;">{{ portfolio_stats.high }}</span>
+        </div>
+        {% endif %}
+        <div class="flex items-center justify-between text-xs" style="padding-top:0.5rem; border-top:1px solid #F0EDE6;">
+          <span style="color:#78716C;">Expired STR licenses</span>
+          <span class="font-medium" style="color:{% if portfolio_stats.expired_licenses > 0 %}#7C3AED{% else %}#16A34A{% endif %};">
+            {{ portfolio_stats.expired_licenses }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span style="color:#78716C;">No structured WiFi</span>
+          <span class="font-medium" style="color:#78716C;">{{ portfolio_stats.no_wifi }}/{{ portfolio_stats.total }}</span>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span style="color:#78716C;">No structured door code</span>
+          <span class="font-medium" style="color:#78716C;">{{ portfolio_stats.no_door_code }}/{{ portfolio_stats.total }}</span>
+        </div>
+      </div>
+
+      {% if thursday_items %}
+      <div style="border-top:1px solid #F0EDE6; padding-top:1rem;">
+        <div class="flex items-center justify-between text-xs">
+          <span style="color:#78716C;">Thursday call · {{ next_thursday }}</span>
+          <span class="font-semibold" style="color:#C49A2A;">{{ thursday_open }} open</span>
+        </div>
+        <div class="text-xs mt-1" style="color:#C8C4BC;">{{ thursday_items | length }} agenda items</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+{# ─── 4. Recurring Issues / Risk Patterns ────────────────────────────────── #}
+<section>
+  <div class="flex items-end justify-between mb-4">
+    <div>
+      <h2 class="text-xs font-semibold uppercase tracking-widest" style="color:#A8A29E; letter-spacing:0.09em;">Risk Patterns Across Portfolio</h2>
+      <p class="text-base font-semibold mt-0.5" style="color:#1C1917;">Active issues grouped by type — sorted by properties affected</p>
+    </div>
+    <span class="text-xs" style="color:#A8A29E;">{{ recurring | length }} patterns detected</span>
+  </div>
+
+  {% if not recurring %}
+  <div class="rounded-lg bg-white py-8 text-center" style="border:1px solid #E5E1D8;">
+    <p class="text-sm" style="color:#A8A29E;">No patterns detected</p>
+  </div>
+  {% else %}
+  <div class="rounded-lg bg-white overflow-hidden" style="border:1px solid #E5E1D8;">
+    <table class="w-full text-sm">
+      <thead>
+        <tr style="background:#FAF9F6; border-bottom:1px solid #E5E1D8;">
+          <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Issue Pattern</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Category</th>
+          <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Properties</th>
+          <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Trend</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Severity</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Recommended Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in recurring %}
+        {% set sev = p.severity %}
+        <tr style="border-bottom:1px solid #F0EDE6;" class="hover:bg-stone-50 transition-colors">
+          <td class="px-5 py-3.5 font-medium" style="color:#1C1917;">{{ p.pattern }}</td>
+          <td class="px-4 py-3.5">
+            {% set cat = p.category %}
+            <span class="text-xs px-2 py-0.5 rounded font-medium"
+                  style="{% if cat == 'Guest Readiness' %}background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;
+                         {% elif cat == 'Guest Access' %}background:#FFFBEB; color:#D97706; border:1px solid #FDE68A;
+                         {% elif cat == 'Compliance' %}background:#F5F3FF; color:#7C3AED; border:1px solid #DDD6FE;
+                         {% elif cat == 'Data Quality' %}background:#ECFEFF; color:#0891B2; border:1px solid #A5F3FC;
+                         {% elif cat == 'Task Health' %}background:#FFFBEB; color:#B45309; border:1px solid #FDE68A;
+                         {% else %}background:#F0EDE6; color:#78716C; border:1px solid #E5E1D8;{% endif %}">
+              {{ cat }}
+            </span>
+          </td>
+          <td class="px-4 py-3.5 text-center">
+            <span class="text-base font-bold"
+                  style="color:{% if p.count > 20 %}#DC2626{% elif p.count > 5 %}#D97706{% else %}#44403C{% endif %};">
+              {{ p.count }}
+            </span>
+          </td>
+          <td class="px-4 py-3.5 text-center text-base font-bold {{ p.trend_cls }}">{{ p.trend }}</td>
+          <td class="px-4 py-3.5">
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-medium"
+                  style="{% if sev == 'critical' %}background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;
+                         {% elif sev == 'high' %}background:#FFFBEB; color:#D97706; border:1px solid #FDE68A;
+                         {% elif sev == 'medium' %}background:#EFF6FF; color:#2563EB; border:1px solid #BFDBFE;
+                         {% else %}background:#F0EDE6; color:#78716C; border:1px solid #E5E1D8;{% endif %}">
+              {{ sev | capitalize }}
+            </span>
+          </td>
+          <td class="px-4 py-3.5 text-xs max-w-xs" style="color:#78716C;">
+            {% if p.action %}
+              <span style="color:#9E7B1C; font-weight:600;">→</span> {{ p.action }}
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</section>
+
+
+{% if bw_loaded %}
+
+{# ─── 5. Leadership Insights ─────────────────────────────────────────────── #}
+<section>
+  <div class="flex items-end justify-between mb-4">
+    <div>
+      <h2 class="text-xs font-semibold uppercase tracking-widest" style="color:#A8A29E; letter-spacing:0.09em;">Leadership Insights</h2>
+      <p class="text-base font-semibold mt-0.5" style="color:#1C1917;">Live intelligence from Breezeway — what the data says today</p>
+    </div>
+    <span class="text-xs px-2 py-1 rounded font-medium" style="background:#F0FDF4; color:#16A34A; border:1px solid #BBF7D0;">Live · Breezeway</span>
+  </div>
+  <div class="grid grid-cols-2 gap-4">
+    {% for ins in leadership_insights %}
+    {% set lvl = ins.level %}
+    <div class="rounded-lg bg-white px-5 py-4"
+         style="border:1px solid #E5E1D8; border-left:3px solid {% if lvl == 'critical' %}#DC2626{% elif lvl == 'warn' %}#D97706{% else %}#C49A2A{% endif %};">
+      <div class="flex items-start gap-3">
+        <div class="w-6 h-6 rounded shrink-0 mt-0.5 flex items-center justify-center"
+             style="background:{% if lvl == 'critical' %}#FEF2F2{% elif lvl == 'warn' %}#FFFBEB{% else %}#FDF8EC{% endif %};">
+          {% if lvl == 'critical' %}
+          <svg class="w-3.5 h-3.5" style="color:#DC2626;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+          {% elif lvl == 'warn' %}
+          <svg class="w-3.5 h-3.5" style="color:#D97706;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9.303 3.376c.866 1.5-.217 3.374-1.948 3.374H4.645c-1.73 0-2.813-1.874-1.948-3.374l7.304-12.374c.866-1.5 3.032-1.5 3.898 0l7.304 12.374z" />
+          </svg>
+          {% else %}
+          <svg class="w-3.5 h-3.5" style="color:#C49A2A;" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+          </svg>
+          {% endif %}
+        </div>
+        <div class="min-w-0">
+          <div class="text-sm font-semibold leading-snug" style="color:#1C1917;">{{ ins.title }}</div>
+          <div class="text-xs mt-1.5 leading-relaxed" style="color:#78716C;">{{ ins.body }}</div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{# ─── 6. Property Health ──────────────────────────────────────────────────── #}
+<section>
+  <div class="flex items-end justify-between mb-4">
+    <div>
+      <h2 class="text-xs font-semibold uppercase tracking-widest" style="color:#A8A29E; letter-spacing:0.09em;">Property Health — Maintenance Intelligence</h2>
+      <p class="text-base font-semibold mt-0.5" style="color:#1C1917;">Highest-risk properties first — scored on volume, trend, and recurring failures</p>
+    </div>
+    <span class="text-xs" style="color:#A8A29E;">{{ property_health | length }} properties · live data</span>
+  </div>
+
+  {% if property_health %}
+  <div class="rounded-lg bg-white overflow-hidden" style="border:1px solid #E5E1D8;">
+    <table class="w-full text-sm">
+      <thead>
+        <tr style="background:#FAF9F6; border-bottom:1px solid #E5E1D8;">
+          <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Property</th>
+          <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Health</th>
+          <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Maint Tasks</th>
+          <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">30d Trend</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Primary Issue</th>
+          <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in property_health %}
+        {% set score = p.score %}
+        <tr style="border-bottom:1px solid #F0EDE6;" class="hover:bg-stone-50 transition-colors">
+
+          {# Left severity stripe #}
+          <td class="p-0 w-1" style="padding:0;">
+            <div class="w-1" style="min-height:54px; background:{% if score < 50 %}#DC2626{% elif score < 70 %}#D97706{% else %}#C49A2A{% endif %};"></div>
+          </td>
+
+          <td class="px-5 py-3.5">
+            <div class="font-semibold text-sm" style="color:#1C1917;">{{ p.name }}</div>
+            {% if p.replacement %}
+            <div class="text-xs mt-0.5 font-medium" style="color:#DC2626;">Replacement candidate</div>
+            {% endif %}
+          </td>
+
+          <td class="px-4 py-3.5 text-center">
+            <div class="inline-flex flex-col items-center">
+              <span class="text-lg font-bold leading-none"
+                    style="color:{% if score < 50 %}#DC2626{% elif score < 70 %}#D97706{% else %}#16A34A{% endif %};">
+                {{ score }}
+              </span>
+              <span class="text-xs mt-0.5" style="color:#C8C4BC;">/100</span>
+            </div>
+          </td>
+
+          <td class="px-4 py-3.5 text-center">
+            <span class="text-sm font-semibold"
+                  style="color:{% if p.maint_open > 5 %}#DC2626{% elif p.maint_open > 2 %}#D97706{% else %}#44403C{% endif %};">
+              {{ p.maint_total }}
+            </span>
+            <div class="text-xs mt-0.5" style="color:#A8A29E;">{{ p.maint_open }} open</div>
+          </td>
+
+          <td class="px-4 py-3.5 text-center">
+            <span class="text-sm font-semibold"
+                  style="color:{% if p.trend_dir == 'up' %}#DC2626{% elif p.trend_dir == 'down' %}#16A34A{% else %}#78716C{% endif %};">
+              {% if p.trend_dir == 'up' %}↑{% elif p.trend_dir == 'down' %}↓{% else %}→{% endif %}
+              {{ p.trend_str }}
+            </span>
+          </td>
+
+          <td class="px-4 py-3.5">
+            {% if p.primary_cat and p.primary_cat != '—' %}
+            <span class="text-xs px-2 py-0.5 rounded font-medium"
+                  style="{% if p.primary_cat == 'Plumbing' %}background:#EFF6FF; color:#2563EB; border:1px solid #BFDBFE;
+                         {% elif p.primary_cat == 'HVAC' %}background:#ECFEFF; color:#0891B2; border:1px solid #A5F3FC;
+                         {% elif p.primary_cat == 'Lock / Access' %}background:#FFFBEB; color:#D97706; border:1px solid #FDE68A;
+                         {% elif p.primary_cat == 'Electrical' %}background:#FEF9C3; color:#A16207; border:1px solid #FEF08A;
+                         {% elif p.primary_cat == 'Pest Control' %}background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;
+                         {% else %}background:#F0EDE6; color:#78716C; border:1px solid #E5E1D8;{% endif %}">
+              {{ p.primary_cat }}
+            </span>
+            {% else %}—{% endif %}
+          </td>
+
+          <td class="px-4 py-3.5 text-center">
+            {% if p.replacement %}
+            <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-semibold"
+                  style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;">
+              <span class="w-1.5 h-1.5 rounded-full" style="background:#DC2626;"></span>
+              Review
+            </span>
+            {% elif score < 70 %}
+            <span class="text-xs px-2 py-0.5 rounded font-medium"
+                  style="background:#FFFBEB; color:#D97706; border:1px solid #FDE68A;">Monitor</span>
+            {% else %}
+            <span class="text-xs px-2 py-0.5 rounded font-medium"
+                  style="background:#F0EDE6; color:#78716C; border:1px solid #E5E1D8;">OK</span>
+            {% endif %}
+          </td>
+
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</section>
+
+{# ─── 7. Recurring Issues ─────────────────────────────────────────────────── #}
+<section>
+  <div class="flex items-end justify-between mb-4">
+    <div>
+      <h2 class="text-xs font-semibold uppercase tracking-widest" style="color:#A8A29E; letter-spacing:0.09em;">Recurring Issues by Category</h2>
+      <p class="text-base font-semibold mt-0.5" style="color:#1C1917;">What keeps happening — and where</p>
+    </div>
+  </div>
+
+  {% if recurring_issues %}
+  <div class="grid grid-cols-3 gap-4">
+    {% for ri in recurring_issues %}
+    {% set tdir = ri.trend_dir %}
+    <div class="rounded-lg bg-white px-5 py-4" style="border:1px solid #E5E1D8;">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <div class="text-sm font-semibold" style="color:#1C1917;">{{ ri.category }}</div>
+          <div class="text-xs mt-0.5" style="color:#A8A29E;">maintenance tasks</div>
+        </div>
+        <div class="text-right">
+          <div class="text-2xl font-bold leading-none"
+               style="color:{% if ri.total > 100 %}#DC2626{% elif ri.total > 50 %}#D97706{% else %}#44403C{% endif %};">
+            {{ ri.total }}
+          </div>
+          <div class="text-xs mt-1 font-semibold"
+               style="color:{% if tdir == 'up' %}#DC2626{% elif tdir == 'down' %}#16A34A{% else %}#78716C{% endif %};">
+            {% if tdir == 'up' %}↑{% elif tdir == 'down' %}↓{% else %}→{% endif %}
+            {% if ri.trend_pct > 0 %}+{% endif %}{{ ri.trend_pct }}% vs last mo.
+          </div>
+        </div>
+      </div>
+      <div style="border-top:1px solid #F0EDE6; padding-top:0.75rem;">
+        <div class="text-xs font-medium mb-2" style="color:#78716C;">Most affected properties</div>
+        <div class="space-y-1.5">
+          {% for prop in ri.top_props %}
+          <div class="flex items-center justify-between text-xs">
+            <span class="truncate" style="color:#44403C; max-width:75%;">{{ prop.name }}</span>
+            <span class="font-semibold ml-2 shrink-0"
+                  style="color:{% if prop.count >= 10 %}#DC2626{% elif prop.count >= 5 %}#D97706{% else %}#78716C{% endif %};">
+              {{ prop.count }}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+
+{# ─── 8. Replacement Candidates ───────────────────────────────────────────── #}
+{% if replacement_candidates %}
+<section>
+  <div class="flex items-end justify-between mb-4">
+    <div>
+      <h2 class="text-xs font-semibold uppercase tracking-widest" style="color:#A8A29E; letter-spacing:0.09em;">Replacement &amp; Owner Conversation Candidates</h2>
+      <p class="text-base font-semibold mt-0.5" style="color:#1C1917;">Properties with 5+ same-category failures within 180 days — evidence-based flags only</p>
+    </div>
+    <span class="text-xs px-2 py-1 rounded font-medium" style="background:#FEF2F2; color:#DC2626; border:1px solid #FECACA;">
+      {{ replacement_candidates | length }} clusters
+    </span>
+  </div>
+
+  <div class="rounded-lg bg-white overflow-hidden" style="border:1px solid #E5E1D8;">
+    <table class="w-full text-sm">
+      <thead>
+        <tr style="background:#FAF9F6; border-bottom:1px solid #E5E1D8;">
+          <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Property</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Failure Type</th>
+          <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Incidents</th>
+          <th class="text-center px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Window</th>
+          <th class="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style="color:#78716C; letter-spacing:0.07em;">Supporting Evidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rc in replacement_candidates %}
+        <tr style="border-bottom:1px solid #F0EDE6;" class="hover:bg-stone-50 transition-colors">
+          <td class="p-0 w-1" style="padding:0;">
+            <div class="w-1" style="min-height:54px; background:{% if rc.count >= 10 %}#DC2626{% elif rc.count >= 7 %}#D97706{% else %}#C49A2A{% endif %};"></div>
+          </td>
+          <td class="px-5 py-3.5">
+            <div class="font-semibold text-sm" style="color:#1C1917;">{{ rc.property }}</div>
+            <div class="text-xs mt-0.5" style="color:#A8A29E;">{{ rc.first }} → {{ rc.last }}</div>
+          </td>
+          <td class="px-4 py-3.5">
+            <span class="text-xs px-2 py-0.5 rounded font-medium"
+                  style="{% if rc.category == 'Plumbing' %}background:#EFF6FF; color:#2563EB; border:1px solid #BFDBFE;
+                         {% elif rc.category == 'HVAC' %}background:#ECFEFF; color:#0891B2; border:1px solid #A5F3FC;
+                         {% elif rc.category == 'Lock / Access' %}background:#FFFBEB; color:#D97706; border:1px solid #FDE68A;
+                         {% elif rc.category == 'Electrical' %}background:#FEF9C3; color:#A16207; border:1px solid #FEF08A;
+                         {% else %}background:#F0EDE6; color:#78716C; border:1px solid #E5E1D8;{% endif %}">
+              {{ rc.category }}
+            </span>
+          </td>
+          <td class="px-4 py-3.5 text-center">
+            <span class="text-lg font-bold leading-none"
+                  style="color:{% if rc.count >= 10 %}#DC2626{% elif rc.count >= 7 %}#D97706{% else %}#44403C{% endif %};">
+              {{ rc.count }}
+            </span>
+          </td>
+          <td class="px-4 py-3.5 text-center text-xs" style="color:#78716C;">{{ rc.span_days }}d</td>
+          <td class="px-4 py-3.5">
+            <div class="space-y-0.5">
+              {% for ev in rc.evidence %}
+              <div class="text-xs" style="color:#78716C;">· {{ ev }}</div>
+              {% endfor %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+
+{% endif %}{# end bw_loaded #}
+
+</div>
+{% endblock %}

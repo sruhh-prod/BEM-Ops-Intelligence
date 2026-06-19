@@ -1,0 +1,12 @@
+app/.env
+.claude/
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+hostaway_listings_raw.json

@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: bem-ops-intelligence
+    runtime: python
+    buildCommand: pip install -r app/requirements.txt
+    startCommand: uvicorn web.server:app --host 0.0.0.0 --port $PORT --app-dir app
+    envVars:
+      - key: BREEZEWAY_CLIENT_ID
+        sync: false
+      - key: BREEZEWAY_CLIENT_SECRET
+        sync: false
+      - key: HOSTAWAY_CLIENT_ID
+        sync: false
+      - key: HOSTAWAY_CLIENT_SECRET
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: PYTHONUNBUFFERED
+        value: "1"
